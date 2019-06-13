@@ -4,17 +4,19 @@ import serial
 import threading
 import time
 
+
 DIRECCION_SERIAL = "/dev/tty.holi-SPPDev"
 BAUD_RATE = 230400
 SALTO_DE_LINEA = '\n'
 VENTANA = 1500
-ESCALA_ERROR = 1
+ESCALA_ERROR = 100
 
-global errorData, proportionalData, integralData, receiveData, receiveData
+global errorData, proportionalData, integralData, receiveData, receiveData, totalData
 errorData = []
 proportionalData = []
 integralData = []
 derivativeData = []
+totalData = []
 receiveData = True
 
 #btSerial = serial.Serial(DIRECCION_SERIAL, baudrate=BAUD_RATE)
@@ -26,7 +28,7 @@ def kill_node(evt):
 
 
 def ServerBT():
-	global errorData, proportionalData, integralData, receiveData, receiveData
+	global errorData, proportionalData, integralData, receiveData, receiveData, totalData
 	line = ""
 
 	while(receiveData):
@@ -44,12 +46,14 @@ def ServerBT():
 				proportionalData.pop(0) if len(proportionalData)>VENTANA else None
 				integralData.pop(0) if len(integralData)>VENTANA else None
 				derivativeData.pop(0) if len(derivativeData)>VENTANA else None
+				totalData.pop(0) if len(totalData)>VENTANA else None
 					
 
 				errorData.append(float(dataRcv[0])*ESCALA_ERROR)
 				proportionalData.append(float(dataRcv[1]))
 				integralData.append(float(dataRcv[2]))
 				derivativeData.append(float(dataRcv[3]))
+				totalData.append(proportionalData[-1]+integralData[-1]+derivativeData[-1])
 				
 				line = ""
 		except:
@@ -58,7 +62,7 @@ def ServerBT():
 
 threading.Thread(target=ServerBT).start()
 
-plt.rcParams["figure.figsize"] = (12,7)
+plt.rcParams["figure.figsize"] = (14,7)
 f, axes = plt.subplots(2,2)
 
 axes[0,0].grid(b=True, which='major', color='#AAAAAA', linestyle='-')
@@ -86,6 +90,7 @@ plt.show()
 
 addData = False
 
+
 while receiveData:
 
 	if addData:
@@ -99,6 +104,7 @@ while receiveData:
 		dataPlotP_sec.remove()
 		dataPlotI_sec.remove()
 		dataPlotD_sec.remove()
+		dataPlotTotal.remove()
 		del dataPlotError
 		del dataPlotP
 		del dataPlotI
@@ -109,11 +115,13 @@ while receiveData:
 		del dataPlotP_sec
 		del dataPlotI_sec
 		del dataPlotD_sec
+		del dataPlotTotal
 
 	dataPlotError, = axes[0,0].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
 	dataPlotP, = axes[0,0].plot(list(range(len(proportionalData))), proportionalData, c='darkmagenta', label='P')
 	dataPlotI, = axes[0,0].plot(list(range(len(integralData))), integralData, c='midnightblue', label='I')
 	dataPlotD, = axes[0,0].plot(list(range(len(derivativeData))), derivativeData, c='green', label='D')
+	dataPlotTotal, = axes[0,0].plot(list(range(len(totalData))), totalData, c='black', label='Total')
 
 	dataPlotError_1, = axes[0,1].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
 	dataPlotError_2, = axes[1,0].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
@@ -123,14 +131,14 @@ while receiveData:
 	dataPlotI_sec, = axes[1,0].plot(list(range(len(integralData))), integralData, c='midnightblue', label='I')
 	dataPlotD_sec, = axes[1,1].plot(list(range(len(derivativeData))), derivativeData, c='green', label='D')
 
-	axes[0,0].legend(loc="upper center", bbox_to_anchor=[distancia1Leyendas, distancia2Leyendas], ncol=4)
+	axes[0,0].legend(loc="upper center", bbox_to_anchor=[distancia1Leyendas, distancia2Leyendas], ncol=5)
 
 
 	plt.draw()
 	plt.pause(0.001)
 	addData = True
 
-	time.sleep(10E-3)
+	time.sleep(100E-3)
 
 
 
