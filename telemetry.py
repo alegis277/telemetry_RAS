@@ -8,6 +8,7 @@ DIRECCION_SERIAL = "/dev/tty.holi-SPPDev"
 BAUD_RATE = 230400
 SALTO_DE_LINEA = '\n'
 VENTANA = 1500
+ESCALA_ERROR = 1
 
 global errorData, proportionalData, integralData, receiveData, receiveData
 errorData = []
@@ -16,7 +17,7 @@ integralData = []
 derivativeData = []
 receiveData = True
 
-btSerial = serial.Serial(DIRECCION_SERIAL, baudrate=BAUD_RATE)
+#btSerial = serial.Serial(DIRECCION_SERIAL, baudrate=BAUD_RATE)
 print("Connected to Line Follower")
 
 def kill_node(evt):
@@ -37,10 +38,18 @@ def ServerBT():
 
 			if received == SALTO_DE_LINEA:
 
-				if len(errorData)>VENTANA:
-					errorData.pop(0)
+				dataRcv = line.split(',')
 
-				errorData.append(float(line))
+				errorData.pop(0) if len(errorData)>VENTANA else None
+				proportionalData.pop(0) if len(proportionalData)>VENTANA else None
+				integralData.pop(0) if len(integralData)>VENTANA else None
+				derivativeData.pop(0) if len(derivativeData)>VENTANA else None
+					
+
+				errorData.append(float(dataRcv[0])*ESCALA_ERROR)
+				proportionalData.append(float(dataRcv[1]))
+				integralData.append(float(dataRcv[2]))
+				derivativeData.append(float(dataRcv[3]))
 				
 				line = ""
 		except:
@@ -49,12 +58,26 @@ def ServerBT():
 
 threading.Thread(target=ServerBT).start()
 
-f, ax1 = plt.subplots()
+plt.rcParams["figure.figsize"] = (12,7)
+f, axes = plt.subplots(2,2)
 
-ax1.grid(b=True, which='major', color='#AAAAAA', linestyle='-')
+axes[0,0].grid(b=True, which='major', color='#AAAAAA', linestyle='-')
+axes[0,1].grid(b=True, which='major', color='#AAAAAA', linestyle='-')
+axes[1,0].grid(b=True, which='major', color='#AAAAAA', linestyle='-')
+axes[1,1].grid(b=True, which='major', color='#AAAAAA', linestyle='-')
 
-plt.xlim(0,VENTANA)
-#plt.ylim(-25,25)
+axes[0,0].set_xlim(0,VENTANA)
+axes[0,1].set_xlim(0,VENTANA)
+axes[1,0].set_xlim(0,VENTANA)
+axes[1,1].set_xlim(0,VENTANA)
+
+#axes[0,0].set_ylim(-10,10)
+#axes[0,1].set_ylim(-10,10)
+#axes[1,0].set_ylim(-10,10)
+#axes[1,1].set_ylim(-10,10)
+
+distancia1Leyendas = 1.14
+distancia2Leyendas = 1.27
 
 f.canvas.mpl_connect('close_event', kill_node)
 
@@ -66,10 +89,42 @@ addData = False
 while receiveData:
 
 	if addData:
-		dataPlot.remove()
-		del dataPlot
+		dataPlotError.remove()
+		dataPlotP.remove()
+		dataPlotI.remove()
+		dataPlotD.remove()
+		dataPlotError_1.remove()
+		dataPlotError_2.remove()
+		dataPlotError_3.remove()
+		dataPlotP_sec.remove()
+		dataPlotI_sec.remove()
+		dataPlotD_sec.remove()
+		del dataPlotError
+		del dataPlotP
+		del dataPlotI
+		del dataPlotD
+		del dataPlotError_1
+		del dataPlotError_2
+		del dataPlotError_3
+		del dataPlotP_sec
+		del dataPlotI_sec
+		del dataPlotD_sec
 
-	dataPlot, = plt.plot(list(range(len(errorData))), errorData, c='firebrick')
+	dataPlotError, = axes[0,0].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
+	dataPlotP, = axes[0,0].plot(list(range(len(proportionalData))), proportionalData, c='darkmagenta', label='P')
+	dataPlotI, = axes[0,0].plot(list(range(len(integralData))), integralData, c='midnightblue', label='I')
+	dataPlotD, = axes[0,0].plot(list(range(len(derivativeData))), derivativeData, c='green', label='D')
+
+	dataPlotError_1, = axes[0,1].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
+	dataPlotError_2, = axes[1,0].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
+	dataPlotError_3, = axes[1,1].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
+
+	dataPlotP_sec, = axes[0,1].plot(list(range(len(proportionalData))), proportionalData, c='darkmagenta', label='P')
+	dataPlotI_sec, = axes[1,0].plot(list(range(len(integralData))), integralData, c='midnightblue', label='I')
+	dataPlotD_sec, = axes[1,1].plot(list(range(len(derivativeData))), derivativeData, c='green', label='D')
+
+	axes[0,0].legend(loc="upper center", bbox_to_anchor=[distancia1Leyendas, distancia2Leyendas], ncol=4)
+
 
 	plt.draw()
 	plt.pause(0.001)
