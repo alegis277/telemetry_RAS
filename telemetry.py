@@ -19,7 +19,7 @@ derivativeData = []
 totalData = []
 receiveData = True
 
-#btSerial = serial.Serial(DIRECCION_SERIAL, baudrate=BAUD_RATE)
+btSerial = serial.Serial(DIRECCION_SERIAL, baudrate=BAUD_RATE)
 print("Connected to Line Follower")
 
 def kill_node(evt):
