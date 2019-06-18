@@ -3,6 +3,7 @@
 # Edit at https://www.gitignore.io/?templates=django
 
 ### Django ###
+.DS_Store
 *.log
 *.pot
 *.pyc
