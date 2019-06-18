@@ -176,9 +176,9 @@ while receiveData:
 
 	if addData:
 		dataPlotError.remove()
-		#dataPlotP.remove()
-		#dataPlotI.remove()
-		#dataPlotD.remove()
+		dataPlotP.remove()
+		dataPlotI.remove()
+		dataPlotD.remove()
 		dataPlotError_1.remove()
 		dataPlotError_2.remove()
 		dataPlotError_3.remove()
@@ -191,9 +191,9 @@ while receiveData:
 		ti_text.remove()
 		vset_text.remove()
 		del dataPlotError
-		#del dataPlotP
-		#del dataPlotI
-		#del dataPlotD
+		del dataPlotP
+		del dataPlotI
+		del dataPlotD
 		del dataPlotError_1
 		del dataPlotError_2
 		del dataPlotError_3
@@ -207,9 +207,9 @@ while receiveData:
 		del vset_text
 
 	dataPlotError, = axes[0,0].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
-	#dataPlotP, = axes[0,0].plot(list(range(len(proportionalData))), proportionalData, c='darkmagenta', label='P')
-	#dataPlotI, = axes[0,0].plot(list(range(len(integralData))), integralData, c='midnightblue', label='I')
-	#dataPlotD, = axes[0,0].plot(list(range(len(derivativeData))), derivativeData, c='green', label='D')
+	dataPlotP, = axes[0,0].plot([0], [0], c='darkmagenta', label='P')
+	dataPlotI, = axes[0,0].plot([0], [0], c='midnightblue', label='I')
+	dataPlotD, = axes[0,0].plot([0], [0], c='green', label='D')
 	dataPlotTotal, = axes[0,0].plot(list(range(len(totalData))), totalData, c='black', label='Total')
 
 	dataPlotError_1, = axes[0,1].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
