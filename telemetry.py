@@ -3,6 +3,7 @@ import numpy as np
 import serial
 import threading
 import time
+from matplotlib.widgets import Button
 
 
 DIRECCION_SERIAL = "/dev/tty.holi-SPPDev"
@@ -25,6 +26,44 @@ print("Connected to Line Follower")
 def kill_node(evt):
 	global receiveData
 	receiveData = False
+
+class Index(object):
+
+	def MoreKp(self, event):
+		btSerial.write("1")
+		print("Add Kp")
+
+	def LessKp(self, event):
+		btSerial.write("2")
+		print("Substract Kp")
+
+
+	def MoreTd(self, event):
+		btSerial.write("3")
+		print("Add Td")
+
+	def LessTd(self, event):
+		btSerial.write("4")
+		print("Substract Td")
+
+
+	def MoreTi(self, event):
+		btSerial.write("5")
+		print("Add Ti")
+
+	def LessTi(self, event):
+		btSerial.write("6")
+		print("Substract Ti")
+
+
+	def MoreVset(self, event):
+		btSerial.write("7")
+		print("Add Vset")
+
+	def LessVset(self, event):
+		btSerial.write("8")
+		print("Substract Vset")
+
 
 
 def ServerBT():
@@ -89,6 +128,34 @@ plt.ion()
 plt.show()
 
 addData = False
+
+callback = Index()
+
+ax1 = plt.axes([0.78, 0.01, 0.05, 0.04])
+ax2 = plt.axes([0.85, 0.01, 0.05, 0.04])
+ax3 = plt.axes([0.78-0.05*4, 0.01, 0.05, 0.04])
+ax4 = plt.axes([0.85-0.05*4, 0.01, 0.05, 0.04])
+ax5 = plt.axes([0.78-0.05*8, 0.01, 0.05, 0.04])
+ax6 = plt.axes([0.85-0.05*8, 0.01, 0.05, 0.04])
+ax7 = plt.axes([0.78-0.05*12, 0.01, 0.05, 0.04])
+ax8 = plt.axes([0.85-0.05*12, 0.01, 0.05, 0.04])
+
+bnext = Button(ax1, '- $V_{set}$')
+bnext.on_clicked(callback.LessVset)
+bprev = Button(ax2, '+ $V_{set}$')
+bprev.on_clicked(callback.MoreVset)
+bnext_1 = Button(ax3, '- $T_i$')
+bnext_1.on_clicked(callback.LessTi)
+bprev_1 = Button(ax4, '+ $T_i$')
+bprev_1.on_clicked(callback.MoreTi)
+bnext_2 = Button(ax5, '- $T_d$')
+bnext_2.on_clicked(callback.LessTd)
+bprev_2 = Button(ax6, '+ $T_d$')
+bprev_2.on_clicked(callback.MoreTd)
+bnext_3 = Button(ax7, '- $K_p$')
+bnext_3.on_clicked(callback.LessKp)
+bprev_3 = Button(ax8, '+ $K_p$')
+bprev_3.on_clicked(callback.MoreKp)
 
 
 while receiveData:
