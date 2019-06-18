@@ -9,6 +9,7 @@ from matplotlib.widgets import Button
 DIRECCION_SERIAL = "/dev/tty.holi-SPPDev"
 BAUD_RATE = 230400
 SALTO_DE_LINEA = '\n'
+FIN_LINEA_CONSTANTES = '!'
 VENTANA = 1500
 ESCALA_ERROR = 100
 
@@ -20,6 +21,13 @@ derivativeData = []
 totalData = []
 receiveData = True
 
+global dataKp, dataTd, dataTi, dataVset
+
+dataKp = 0
+dataTd = 0
+dataTi = 0
+dataVset = 0
+
 btSerial = serial.Serial(DIRECCION_SERIAL, baudrate=BAUD_RATE)
 print("Connected to Line Follower")
 
@@ -30,44 +38,34 @@ def kill_node(evt):
 class Index(object):
 
 	def MoreKp(self, event):
-		btSerial.write("1")
-		print("Add Kp")
+		btSerial.write("1".encode())
 
 	def LessKp(self, event):
-		btSerial.write("2")
-		print("Substract Kp")
-
+		btSerial.write("2".encode())
 
 	def MoreTd(self, event):
-		btSerial.write("3")
-		print("Add Td")
+		btSerial.write("3".encode())
 
 	def LessTd(self, event):
-		btSerial.write("4")
-		print("Substract Td")
-
+		btSerial.write("4".encode())
 
 	def MoreTi(self, event):
-		btSerial.write("5")
-		print("Add Ti")
+		btSerial.write("5".encode())
 
 	def LessTi(self, event):
-		btSerial.write("6")
-		print("Substract Ti")
-
+		btSerial.write("6".encode())
 
 	def MoreVset(self, event):
-		btSerial.write("7")
-		print("Add Vset")
+		btSerial.write("7".encode())
 
 	def LessVset(self, event):
-		btSerial.write("8")
-		print("Substract Vset")
+		btSerial.write("8".encode())
 
 
 
 def ServerBT():
 	global errorData, proportionalData, integralData, receiveData, receiveData, totalData
+	global dataKp, dataTd, dataTi, dataVset
 	line = ""
 
 	while(receiveData):
@@ -95,6 +93,19 @@ def ServerBT():
 				totalData.append(proportionalData[-1]+integralData[-1]+derivativeData[-1])
 				
 				line = ""
+
+			elif received == FIN_LINEA_CONSTANTES:
+
+				dataRcv = line.strip(FIN_LINEA_CONSTANTES).split('#')
+
+				dataKp = dataRcv[0]
+				dataTd = dataRcv[1]
+				dataTi = dataRcv[2]
+				dataVset = dataRcv[3]
+
+				#print('KP', dataRcv[0], '\t', 'TD', dataRcv[1], '\t', 'TI', dataRcv[2], '\t', 'Vset', dataRcv[3])
+
+
 		except:
 			line=""
 
@@ -158,6 +169,9 @@ bprev_3 = Button(ax8, '+ $K_p$')
 bprev_3.on_clicked(callback.MoreKp)
 
 
+
+
+
 while receiveData:
 
 	if addData:
@@ -172,6 +186,10 @@ while receiveData:
 		dataPlotI_sec.remove()
 		dataPlotD_sec.remove()
 		dataPlotTotal.remove()
+		kp_text.remove()
+		td_text.remove()
+		ti_text.remove()
+		vset_text.remove()
 		del dataPlotError
 		del dataPlotP
 		del dataPlotI
@@ -183,6 +201,10 @@ while receiveData:
 		del dataPlotI_sec
 		del dataPlotD_sec
 		del dataPlotTotal
+		del kp_text
+		del td_text
+		del ti_text
+		del vset_text
 
 	dataPlotError, = axes[0,0].plot(list(range(len(errorData))), errorData, c='firebrick', label='Error')
 	dataPlotP, = axes[0,0].plot(list(range(len(proportionalData))), proportionalData, c='darkmagenta', label='P')
@@ -197,6 +219,14 @@ while receiveData:
 	dataPlotP_sec, = axes[0,1].plot(list(range(len(proportionalData))), proportionalData, c='darkmagenta', label='P')
 	dataPlotI_sec, = axes[1,0].plot(list(range(len(integralData))), integralData, c='midnightblue', label='I')
 	dataPlotD_sec, = axes[1,1].plot(list(range(len(derivativeData))), derivativeData, c='green', label='D')
+
+
+
+	kp_text = plt.text(-2.5, 0.39, "%.2f"%(float(dataKp)), transform=plt.gca().transAxes)
+	td_text = plt.text(1.5, 0.39, "%.2f"%(float(dataTd)), transform=plt.gca().transAxes)
+	ti_text = plt.text(5.5, 0.39, "%.2f"%(float(dataTi)), transform=plt.gca().transAxes)
+	vset_text = plt.text(9.5, 0.39, "%.2f"%(float(dataVset)), transform=plt.gca().transAxes)
+
 
 	axes[0,0].legend(loc="upper center", bbox_to_anchor=[distancia1Leyendas, distancia2Leyendas], ncol=5)
 
